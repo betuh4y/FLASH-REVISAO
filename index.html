@@ -1,2195 +1,281 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Caderno de Estudos Jurídicos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;family=Lora:ital,wght@0,400;0,500;1,400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0
-      }
-
-      :root {
-        --bg: #0c0e18;
-        --sidebar-bg: #080a12;
-        --card-bg: #111422;
-        --card-hover: #161928;
-        --border: #1e2338;
-        --border-light: #252a42;
-        --gold: #c9a84c;
-        --gold-light: #e8c97a;
-        --gold-dim: #7a6230;
-        --text: #dde0f0;
-        --text-muted: #6b7299;
-        --text-faint: #3a3f5c;
-        --red: #e05c6a;
-        --red-dim: #4a1a20;
-        --green: #4ecb8a;
-        --tag-bg: #1a1f36;
-        --scrollbar: #1e2338;
-        --sub-bg: #0e1020;
-      }
-
-      html,
-      body {
-        height: 100%;
-        overflow: hidden;
-        font-size: 15px
-      }
-
-      body {
-        font-family: 'Lora', serif;
-        background: var(--bg);
-        color: var(--text);
-        display: flex;
-        line-height: 1.6
-      }
-
-      /* SCROLLBAR */
-      ::-webkit-scrollbar {
-        width: 5px;
-        height: 5px
-      }
-
-      ::-webkit-scrollbar-track {
-        background: transparent
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: var(--scrollbar);
-        border-radius: 3px
-      }
-
-      /* LOADING */
-      #loadingScreen {
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        z-index: 9999;
-        transition: opacity .4s
-      }
-
-      #loadingScreen.hidden {
-        opacity: 0;
-        pointer-events: none
-      }
-
-      .spinner {
-        width: 36px;
-        height: 36px;
-        border: 3px solid var(--border);
-        border-top-color: var(--gold);
-        border-radius: 50%;
-        animation: spin .8s linear infinite
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg)
-        }
-      }
-
-      .loading-logo {
-        font-family: 'Playfair Display', serif;
-        font-size: 24px;
-        color: var(--gold-light)
-      }
-
-      .loading-text {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        letter-spacing: .15em;
-        color: var(--text-faint);
-        text-transform: uppercase
-      }
-
-      /* SIDEBAR */
-      #sidebar {
-        width: 290px;
-        min-width: 290px;
-        background: var(--sidebar-bg);
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-        position: relative;
-        transition: transform .3s cubic-bezier(0.32, 0.72, 0, 1)
-      }
-
-      .sidebar-header {
-        padding: 22px 20px 16px;
-        border-bottom: 1px solid var(--border);
-        position: relative
-      }
-
-      .sidebar-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 14px
-      }
-
-      .logo-icon {
-        width: 34px;
-        height: 34px;
-        background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        flex-shrink: 0
-      }
-
-      .logo-text {
-        font-family: 'Playfair Display', serif;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text);
-        line-height: 1.2
-      }
-
-      .logo-sub {
-        font-size: 9px;
-        color: var(--text-muted);
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        font-family: 'JetBrains Mono', monospace
-      }
-
-      .sync-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-left: 4px;
-        vertical-align: middle;
-        background: var(--green);
-        box-shadow: 0 0 6px var(--green)
-      }
-
-      .sync-dot.offline {
-        background: var(--red);
-        box-shadow: 0 0 6px var(--red)
-      }
-
-      .sync-dot.syncing {
-        background: var(--gold);
-        box-shadow: 0 0 6px var(--gold);
-        animation: pulse 1s ease infinite
-      }
-
-      @keyframes pulse {
-
-        0%,
-        100% {
-          opacity: 1
-        }
-
-        50% {
-          opacity: .25
-        }
-      }
-
-      .mobile-sidebar-close {
-        display: none;
-        position: absolute;
-        right: 16px;
-        top: 18px;
-        background: none;
-        border: none;
-        font-size: 28px;
-        color: var(--text-faint);
-        cursor: pointer;
-        z-index: 10;
-        padding: 4px;
-        line-height: 1;
-      }
-
-      /* LOCK BTN */
-      .lock-btn {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: none;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text-muted);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        letter-spacing: .08em;
-        padding: 5px 10px;
-        cursor: pointer;
-        transition: all .2s;
-        margin-bottom: 10px
-      }
-
-      .lock-btn:hover {
-        border-color: var(--border-light);
-        color: var(--text)
-      }
-
-      .lock-btn.unlocked {
-        border-color: var(--gold-dim);
-        color: var(--gold);
-        background: rgba(201, 168, 76, .06)
-      }
-
-      /* SEARCH */
-      .search-box {
-        position: relative
-      }
-
-      .search-box input {
-        width: 100%;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 8px 12px 8px 34px;
-        color: var(--text);
-        font-family: 'Lora', serif;
-        font-size: 13px;
-        outline: none;
-        transition: border-color .2s
-      }
-
-      .search-box input:focus {
-        border-color: var(--gold-dim)
-      }
-
-      .search-box input::placeholder {
-        color: var(--text-faint)
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 11px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-faint);
-        font-size: 12px;
-        pointer-events: none
-      }
-
-      /* TREE */
-      .sidebar-tree {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px 0
-      }
-
-      .section-label {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9px;
-        letter-spacing: .18em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-        padding: 6px 20px;
-        display: flex;
-        align-items: center;
-        gap: 6px
-      }
-
-      /* CATEGORIES */
-      .cat-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 20px;
-        cursor: pointer;
-        transition: all .15s;
-        border-left: 2px solid transparent
-      }
-
-      .cat-row:hover {
-        background: rgba(255, 255, 255, .025)
-      }
-
-      .cat-row.open {
-        background: rgba(255, 255, 255, .018)
-      }
-
-      .cat-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0
-      }
-
-      .cat-label {
-        flex: 1;
-        font-size: 13px;
-        color: var(--text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 500
-      }
-
-      .cat-chevron {
-        font-size: 10px;
-        color: var(--text-faint);
-        transition: transform .2s;
-        flex-shrink: 0
-      }
-
-      .cat-row.open .cat-chevron {
-        transform: rotate(90deg)
-      }
-
-      .cat-menu-btn {
-        opacity: 0;
-        background: none;
-        border: none;
-        color: var(--text-faint);
-        cursor: pointer;
-        font-size: 13px;
-        padding: 2px 4px;
-        border-radius: 4px;
-        transition: opacity .15s;
-        line-height: 1;
-        flex-shrink: 0
-      }
-
-      .cat-row:hover .cat-menu-btn {
-        opacity: 1
-      }
-
-      /* SUBCATEGORIES */
-      .sub-group {
-        display: none;
-        padding-left: 0
-      }
-
-      .sub-group.open {
-        display: block
-      }
-
-      .sub-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 20px 7px 34px;
-        cursor: pointer;
-        transition: all .15s;
-        border-left: 2px solid transparent
-      }
-
-      .sub-row:hover {
-        background: rgba(255, 255, 255, .03)
-      }
-
-      .sub-row.active {
-        background: var(--card-bg);
-        border-left-color: var(--gold)
-      }
-
-      .sub-icon {
-        font-size: 10px;
-        color: var(--text-faint);
-        flex-shrink: 0
-      }
-
-      .sub-row.active .sub-icon {
-        color: var(--gold)
-      }
-
-      .sub-label {
-        flex: 1;
-        font-size: 12.5px;
-        color: var(--text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis
-      }
-
-      .sub-row.active .sub-label {
-        color: var(--gold-light)
-      }
-
-      .sub-count {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        color: var(--text-faint);
-        background: var(--tag-bg);
-        padding: 1px 5px;
-        border-radius: 8px;
-        flex-shrink: 0
-      }
-
-      .sub-del {
-        opacity: 0;
-        background: none;
-        border: none;
-        color: var(--red);
-        cursor: pointer;
-        font-size: 12px;
-        padding: 2px 3px;
-        border-radius: 3px;
-        transition: opacity .15s;
-        line-height: 1
-      }
-
-      .sub-row:hover .sub-del {
-        opacity: 1
-      }
-
-      /* ADD SUB */
-      .add-sub-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 20px 5px 34px;
-        cursor: pointer;
-        transition: all .15s
-      }
-
-      .add-sub-row:hover .add-sub-txt {
-        color: var(--gold)
-      }
-
-      .add-sub-txt {
-        font-size: 11px;
-        color: var(--text-faint);
-        font-family: 'JetBrains Mono', monospace;
-        letter-spacing: .05em;
-        transition: color .15s
-      }
-
-      /* FOOTER */
-      .sidebar-footer {
-        padding: 14px 20px;
-        border-top: 1px solid var(--border)
-      }
-
-      .btn-new-cat {
-        width: 100%;
-        background: linear-gradient(135deg, var(--gold-dim), #5a4520);
-        border: 1px solid var(--gold-dim);
-        border-radius: 8px;
-        color: var(--gold-light);
-        font-family: 'Lora', serif;
-        font-size: 13px;
-        padding: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: all .2s
-      }
-
-      .btn-new-cat:hover {
-        background: linear-gradient(135deg, #7a6230, #6a5228);
-        border-color: var(--gold);
-        color: var(--gold)
-      }
-
-      /* MAIN */
-      #main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-        transition: margin-left .3s
-      }
-
-      #topbar {
-        padding: 18px 24px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: var(--bg);
-        flex-shrink: 0
-      }
-
-      .hamburger {
-        display: none;
-        background: none;
-        border: none;
-        font-size: 26px;
-        color: var(--text);
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 8px;
-        line-height: 1;
-      }
-
-      .topbar-title {
-        flex: 1
-      }
-
-      .topbar-title h1 {
-        font-family: 'Playfair Display', serif;
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--gold-light);
-        line-height: 1.2
-      }
-
-      .topbar-breadcrumb {
-        font-size: 11px;
-        color: var(--text-faint);
-        font-family: 'JetBrains Mono', monospace;
-        letter-spacing: .05em;
-        margin-top: 2px
-      }
-
-      .topbar-breadcrumb span {
-        color: var(--text-muted)
-      }
-
-      .topbar-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center
-      }
-
-      /* BUTTONS */
-      .btn {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-family: 'Lora', serif;
-        font-size: 13px;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all .2s;
-        font-weight: 500
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, var(--gold-dim), #5a4520);
-        border-color: var(--gold-dim);
-        color: var(--gold-light)
-      }
-
-      .btn-primary:hover {
-        background: linear-gradient(135deg, #7a6230, #6a5228);
-        border-color: var(--gold);
-        color: var(--gold)
-      }
-
-      .btn-ghost {
-        background: var(--card-bg);
-        border-color: var(--border);
-        color: var(--text-muted)
-      }
-
-      .btn-ghost:hover {
-        border-color: var(--border-light);
-        color: var(--text)
-      }
-
-      .btn:disabled {
-        opacity: .4;
-        cursor: not-allowed;
-        pointer-events: none
-      }
-
-      .btn-lock-top {
-        background: none;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text-faint);
-        font-size: 15px;
-        width: 34px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all .2s;
-        flex-shrink: 0
-      }
-
-      .btn-lock-top:hover {
-        border-color: var(--border-light);
-        color: var(--text)
-      }
-
-      .btn-lock-top.unlocked {
-        border-color: var(--gold-dim);
-        color: var(--gold);
-        background: rgba(201, 168, 76, .06)
-      }
-
-      /* STATS */
-      .stats-bar {
-        display: flex;
-        gap: 18px;
-        padding: 12px 24px;
-        border-bottom: 1px solid var(--border);
-        background: rgba(8, 10, 18, .5);
-        flex-shrink: 0;
-        flex-wrap: wrap
-      }
-
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        color: var(--text-faint)
-      }
-
-      .stat-num {
-        color: var(--gold);
-        font-size: 13px;
-        font-weight: 500
-      }
-
-      /* CONTENT */
-      #content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 26px 24px
-      }
-
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        gap: 14px;
-        text-align: center
-      }
-
-      .empty-icon {
-        font-size: 52px;
-        opacity: .25
-      }
-
-      .empty-state h2 {
-        font-family: 'Playfair Display', serif;
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--text-muted)
-      }
-
-      .empty-state p {
-        color: var(--text-faint);
-        font-size: 13px;
-        max-width: 360px
-      }
-
-      .locked-hint {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        color: var(--text-faint);
-        font-family: 'JetBrains Mono', monospace;
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 4px 12px;
-        margin-top: 10px;
-        cursor: pointer;
-        transition: all .2s
-      }
-
-      .locked-hint:hover {
-        border-color: var(--gold-dim);
-        color: var(--gold)
-      }
-
-      /* NOTES */
-      .notes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px
-      }
-
-      .note-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px;
-        cursor: pointer;
-        transition: all .2s;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        position: relative;
-        overflow: hidden
-      }
-
-      .note-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 3px;
-        height: 100%;
-        background: var(--card-color, var(--gold-dim));
-        opacity: .7
-      }
-
-      .note-card:hover {
-        background: var(--card-hover);
-        border-color: var(--border-light);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
-      }
-
-      .note-card.important::before {
-        background: var(--gold);
-        opacity: 1
-      }
-
-      .note-card-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px
-      }
-
-      .note-card-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text);
-        line-height: 1.3;
-        flex: 1
-      }
-
-      .note-card-actions {
-        display: flex;
-        gap: 3px;
-        opacity: 0;
-        transition: opacity .15s;
-        flex-shrink: 0
-      }
-
-      .note-card:hover .note-card-actions {
-        opacity: 1
-      }
-
-      .icon-btn {
-        background: none;
-        border: none;
-        padding: 4px 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 13px;
-        color: var(--text-muted);
-        transition: all .15s;
-        line-height: 1
-      }
-
-      .icon-btn:hover {
-        background: var(--tag-bg);
-        color: var(--text)
-      }
-
-      .icon-btn.danger:hover {
-        color: var(--red);
-        background: var(--red-dim)
-      }
-
-      .icon-btn.star.active {
-        color: var(--gold)
-      }
-
-      .note-preview {
-        font-size: 13px;
-        color: var(--text-muted);
-        line-height: 1.6;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden
-      }
-
-      .note-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-top: 2px
-      }
-
-      .tag {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        background: var(--tag-bg);
-        color: var(--text-muted);
-        padding: 2px 7px;
-        border-radius: 20px;
-        border: 1px solid var(--border)
-      }
-
-      .tag.important {
-        background: rgba(201, 168, 76, .1);
-        color: var(--gold);
-        border-color: var(--gold-dim)
-      }
-
-      .note-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: auto
-      }
-
-      .note-date {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        color: var(--text-faint)
-      }
-
-      .filter-row {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 22px;
-        flex-wrap: wrap
-      }
-
-      .filter-btn {
-        background: var(--tag-bg);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        padding: 5px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        letter-spacing: .05em;
-        transition: all .15s
-      }
-
-      .filter-btn.active {
-        background: rgba(201, 168, 76, .12);
-        border-color: var(--gold-dim);
-        color: var(--gold-light)
-      }
-
-      /* MODAL */
-      .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, .75);
-        backdrop-filter: blur(8px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        animation: fadeIn .2s ease
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0
-        }
-
-        to {
-          opacity: 1
-        }
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px)
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0)
-        }
-      }
-
-      .modal {
-        background: var(--card-bg);
-        border: 1px solid var(--border-light);
-        border-radius: 16px;
-        padding: 24px;
-        width: 90%;
-        max-width: 620px;
-        max-height: 90vh;
-        overflow-y: auto;
-        animation: slideUp .25s ease;
-        box-shadow: 0 24px 64px rgba(0, 0, 0, .5)
-      }
-
-      .modal.wide {
-        max-width: 780px
-      }
-
-      .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px
-      }
-
-      .modal-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 19px;
-        font-weight: 600;
-        color: var(--gold-light)
-      }
-
-      .modal-close {
-        background: var(--tag-bg);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-size: 17px;
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all .15s
-      }
-
-      .modal-close:hover {
-        color: var(--text);
-        border-color: var(--border-light)
-      }
-
-      .form-group {
-        margin-bottom: 16px
-      }
-
-      .form-label {
-        display: block;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        letter-spacing: .15em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        margin-bottom: 6px
-      }
-
-      .form-input,
-      .form-textarea {
-        width: 100%;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 13px;
-        color: var(--text);
-        font-family: 'Lora', serif;
-        font-size: 14px;
-        outline: none;
-        transition: border-color .2s
-      }
-
-      .form-input:focus,
-      .form-textarea:focus {
-        border-color: var(--gold-dim)
-      }
-
-      .form-input::placeholder,
-      .form-textarea::placeholder {
-        color: var(--text-faint)
-      }
-
-      .form-textarea {
-        min-height: 210px;
-        resize: vertical;
-        line-height: 1.7
-      }
-
-      .color-picker {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 4px
-      }
-
-      .color-swatch {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: all .15s
-      }
-
-      .color-swatch.selected {
-        border-color: white;
-        transform: scale(1.2)
-      }
-
-      .form-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 22px
-      }
-
-      /* PASSWORD MODAL */
-      .pw-box {
-        text-align: center;
-        padding: 8px 0
-      }
-
-      .pw-icon {
-        font-size: 40px;
-        margin-bottom: 12px
-      }
-
-      .pw-desc {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-bottom: 20px
-      }
-
-      .pw-error {
-        color: var(--red);
-        font-size: 12px;
-        font-family: 'JetBrains Mono', monospace;
-        margin-top: 8px;
-        display: none
-      }
-
-      .pw-error.show {
-        display: block
-      }
-
-      /* READ MODE */
-      .read-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--gold-light);
-        line-height: 1.3;
-        margin-bottom: 8px
-      }
-
-      .read-meta {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 22px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--border);
-        flex-wrap: wrap
-      }
-
-      .read-body {
-        font-size: 15px;
-        line-height: 1.85;
-        color: var(--text);
-        white-space: pre-wrap;
-        font-family: 'Lora', serif
-      }
-
-      .read-body mark {
-        background: rgba(201, 168, 76, .2);
-        color: var(--gold-light);
-        padding: 1px 3px;
-        border-radius: 3px
-      }
-
-      .read-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 22px;
-        padding-top: 16px;
-        border-top: 1px solid var(--border);
-        justify-content: flex-end
-      }
-
-      /* REVIEW */
-      .review-progress {
-        height: 3px;
-        background: var(--border);
-        border-radius: 2px;
-        margin-bottom: 26px;
-        overflow: hidden
-      }
-
-      .review-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, var(--gold-dim), var(--gold));
-        border-radius: 2px;
-        transition: width .3s ease
-      }
-
-      .divider {
-        height: 1px;
-        background: var(--border);
-        margin: 20px 0
-      }
-
-      /* TOAST */
-      #toast {
-        position: fixed;
-        bottom: 22px;
-        right: 22px;
-        background: var(--card-bg);
-        border: 1px solid var(--border-light);
-        border-radius: 10px;
-        padding: 11px 16px;
-        font-size: 13px;
-        color: var(--text);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
-        z-index: 99999;
-        display: none;
-        align-items: center;
-        gap: 8px
-      }
-
-      #toast.show {
-        display: flex
-      }
-
-      #toast.success .toast-icon {
-        color: var(--green)
-      }
-
-      #toast.error .toast-icon {
-        color: var(--red)
-      }
-
-      /* ======================== MOBILE RESPONSIVE ======================== */
-      @media (max-width: 820px) {
-        #sidebar {
-          position: fixed;
-          left: 0;
-          top: 0;
-          width: 280px;
-          min-width: 280px;
-          transform: translateX(-100%);
-          box-shadow: 12px 0 30px -10px rgba(0, 0, 0, .7);
-          z-index: 99999;
-          border-right: none;
-          border-radius: 0 16px 16px 0;
-        }
-
-        #sidebar.open {
-          transform: translateX(0);
-        }
-
-        .hamburger {
-          display: block;
-        }
-
-        .mobile-sidebar-close {
-          display: block;
-        }
-
-        #main {
-          width: 100%;
-          margin-left: 0;
-        }
-
-        #topbar {
-          padding: 14px 16px;
-          gap: 8px;
-          flex-wrap: nowrap;
-        }
-
-        .topbar-title h1 {
-          font-size: 18px;
-        }
-
-        #content {
-          padding: 20px 16px;
-        }
-
-        .notes-grid {
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 14px;
-        }
-
-        .note-card {
-          padding: 16px;
-          border-radius: 12px;
-        }
-
-        .note-card-title {
-          font-size: 14.5px;
-        }
-
-        .stats-bar {
-          padding: 10px 16px;
-          gap: 14px;
-          font-size: 10.5px;
-        }
-
-        .stat-num {
-          font-size: 12.5px;
-        }
-
-        .sidebar-header {
-          padding: 16px 16px 12px;
-        }
-
-        .cat-row,
-        .sub-row {
-          padding: 10px 16px;
-        }
-
-        .sub-row {
-          padding: 8px 16px 8px 30px;
-        }
-
-        .btn-new-cat {
-          padding: 13px;
-          font-size: 14px;
-        }
-
-        .modal {
-          width: 96%;
-          max-width: none;
-          margin: 12px;
-          border-radius: 14px;
-          padding: 22px;
-        }
-
-        .read-title {
-          font-size: 22px;
-        }
-
-        .form-textarea {
-          min-height: 180px;
-        }
-
-        .filter-row {
-          gap: 6px;
-        }
-
-        .filter-btn {
-          padding: 6px 11px;
-          font-size: 10.5px;
-        }
-
-        /* Touch-friendly adjustments */
-        .icon-btn,
-        .cat-menu-btn,
-        .sub-del {
-          padding: 6px;
-          min-width: 34px;
-          min-height: 34px;
-        }
-
-        /* Prevent zoom on inputs */
-        input,
-        textarea,
-        select {
-          font-size: 16px !important;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .notes-grid {
-          grid-template-columns: 1fr;
-        }
-
-        #topbar {
-          padding: 12px 14px;
-        }
-
-        #content {
-          padding: 18px 14px;
-        }
-
-        .note-preview {
-          -webkit-line-clamp: 4;
-        }
-      }
-    </style>
-    <script type="text/javascript" src="./index.js" defer=""></script>
-    <link rel="stylesheet" href="./index.css">
-  </head>
-
-  <body>
-
-    <!-- LOADING -->
-    <div id="loadingScreen">
-      <div class="loading-logo">⚖️ Caderno Jurídico</div>
-      <div class="spinner"></div>
-      <div class="loading-text" id="loadingMsg">Conectando ao Firebase…</div>
-    </div>
-
-    <!-- SIDEBAR -->
-    <div id="sidebar">
-      <div class="sidebar-header">
-        <button class="mobile-sidebar-close" onclick="toggleMobileSidebar()">✕</button>
-        <div class="sidebar-logo">
-          <div class="logo-icon">⚖️</div>
-          <div>
-            <div class="logo-text">Caderno Jurídico <span class="sync-dot syncing" id="syncDot"></span></div>
-            <div class="logo-sub">Firebase · Sync em tempo real</div>
-          </div>
-        </div>
-
-        <!-- lock button -->
-        <button class="lock-btn" id="lockBtn" onclick="handleLockBtn()">
-          <span id="lockIcon">🔒</span>
-          <span id="lockLabel">Modo leitura</span>
-        </button>
-
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Buscar anotações…" oninput="handleSearch()">
-        </div>
-      </div>
-
-      <div class="sidebar-tree" id="sidebarTree">
-        <div class="section-label">Matérias</div>
-      </div>
-
-      <div class="sidebar-footer">
-        <button class="btn-new-cat" id="btnNewCat" onclick="openNewCategoryModal()">＋ Nova Matéria</button>
-      </div>
-    </div>
-
-    <!-- MAIN -->
-    <div id="main">
-      <div id="topbar">
-        <!-- HAMBURGUER MOBILE -->
-        <button class="hamburger" onclick="toggleMobileSidebar()">☰</button>
-
-        <div class="topbar-title">
-          <h1 id="mainTitle">Selecione um Assunto</h1>
-          <div class="topbar-breadcrumb" id="breadcrumb">← Escolha uma matéria e assunto na barra lateral</div>
-        </div>
-
-        <div class="topbar-actions" id="topActions" style="display:none">
-          <button class="btn btn-ghost" onclick="openReviewMode()">📖 Revisar</button>
-          <button class="btn btn-primary edit-only" id="btnNewNote" onclick="openNewNoteModal()">＋ Nova Anotação</button>
-        </div>
-      </div>
-
-      <div class="stats-bar" id="statsBar" style="display:none">
-        <div class="stat-item"><span class="stat-num" id="statTotal">0</span> anotações</div>
-        <div class="stat-item"><span class="stat-num" id="statImportant">0</span> importantes</div>
-        <div class="stat-item"><span class="stat-num" id="statToday">0</span> hoje</div>
-      </div>
-
-      <div id="content">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-icon">📚</div>
-          <h2>Nenhum assunto selecionado</h2>
-          <p>Selecione uma matéria e um assunto na barra lateral para ver as anotações.</p>
-          <div class="locked-hint" id="lockedHint" onclick="handleLockBtn()" style="display:none">🔒 Clique aqui para desbloquear edição</div>
-        </div>
-
-        <div id="notesArea" style="display:none">
-          <div class="filter-row">
-            <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
-            <button class="filter-btn" onclick="setFilter('important',this)">⭐ Importantes</button>
-            <button class="filter-btn" onclick="setFilter('recent',this)">🕐 Recentes</button>
-          </div>
-          <div class="notes-grid" id="notesGrid"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Caderno Jurídico - Leitura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0c0e18;--sidebar-bg:#080a12;--card-bg:#111422;--border:#1e2338;
+      --gold:#c9a84c;--gold-light:#e8c97a;--text:#dde0f0;--text-muted:#6b7299;--text-faint:#3a3f5c;
+    }
+    body{font-family:'Lora',serif;background:var(--bg);color:var(--text);line-height:1.6;height:100vh;display:flex;overflow:hidden}
+    
+    /* === SIDEBAR (igual ao original) === */
+    #sidebar{width:290px;min-width:290px;background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+    .sidebar-header{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),#7a6230);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .logo-text{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--text)}
+    .section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);padding:6px 20px;margin-top:8px}
+
+    .cat-row{display:flex;align-items:center;gap:8px;padding:11px 20px;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+    .cat-row:hover{background:rgba(255,255,255,.025)}
+    .cat-row.open{background:rgba(255,255,255,.018)}
+    .cat-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .cat-label{flex:1;font-size:14px;color:var(--text);font-weight:600}
+    .cat-chevron{font-size:11px;color:var(--text-faint);transition:transform .2s}
+    .cat-row.open .cat-chevron{transform:rotate(90deg)}
+
+    .sub-group{display:none;padding-left:0}
+    .sub-group.open{display:block}
+    .sub-row{display:flex;align-items:center;gap:8px;padding:9px 20px 9px 38px;cursor:pointer;transition:all .15s}
+    .sub-row:hover{background:rgba(255,255,255,.03)}
+    .sub-row.active{background:var(--card-bg);border-left:3px solid var(--gold)}
+    .sub-icon{font-size:11px;color:var(--text-faint)}
+    .sub-label{flex:1;font-size:13px;color:var(--text-muted)}
+    .sub-row.active .sub-label{color:var(--gold-light)}
+    .sub-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);background:#1a1f36;padding:1px 6px;border-radius:8px}
+
+    /* resto da página */
+    .topbar{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:12px}
+    #content{flex:1;overflow-y:auto;padding:20px}
+    .note-card{background:#111422;border:1px solid #1e2338;border-radius:12px;padding:18px;cursor:pointer;transition:all .2s}
+    .note-card:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(0,0,0,.5)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;z-index:99999}
+    .modal-content{background:#111422;width:92%;max-width:640px;border-radius:16px;padding:24px;max-height:88vh;overflow-y:auto}
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR (AGORA IGUAL AO ORIGINAL) -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">⚖️</div>
+        <div>
+          <div class="logo-text">Caderno Jurídico</div>
+          <div style="font-size:10px;color:#6b7299;letter-spacing:1px">MODO LEITURA</div>
         </div>
       </div>
     </div>
 
-    <div id="toast"><span class="toast-icon">✓</span><span id="toastMsg"></span></div>
+    <div id="sidebarTree" style="flex:1;overflow-y:auto"></div>
+  </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <!-- TOPBAR -->
+  <div style="flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden">
+    <div class="topbar">
+      <button onclick="toggleMobileSidebar()" style="font-size:29px;background:none;border:none;color:var(--text)">☰</button>
+      <div style="flex:1">
+        <h1 id="mainTitle" style="font-family:'Playfair Display',serif;font-size:23px;color:#e8c97a;margin:0">Caderno Jurídico</h1>
+        <div id="breadcrumb" style="font-size:12.5px;color:#6b7299">Selecione uma matéria</div>
+      </div>
+      <button onclick="openReviewMode()" style="padding:10px 20px;background:#111422;border:1px solid #1e2338;border-radius:10px;color:var(--text);font-size:14.5px">📖 Revisar</button>
+    </div>
 
-    <script>
-      // ═══════════════════════════════════════════════
-      // FIREBASE (mantido igual)
-      const firebaseConfig = {
-        apiKey: atob('QUl6YVN5REpCZEs5SS1qdGc5dWpUYzlYc3hyLWhuUGZrSWQ0d0lV'),
-        authDomain: atob('cGR2MS03NzYzMi5maXJlYmFzZWFwcC5jb20='),
-        databaseURL: atob('aHR0cHM6Ly9wZHYxLTc3NjMyLWRlZmF1bHQtcnRkYi5maXJlYmFzZWlvLmNvbQ=='),
-        projectId: atob('cGR2MS03NzYzMg=='),
-        storageBucket: atob('cGR2MS03NzYzMi5maXJlYmFzZXN0b3JhZ2UuYXBw'),
-        messagingSenderId: atob('MjQ2MDMzNzkxMTE3'),
-        appId: atob('MToyNDYwMzM3OTExMTc6d2ViOjdiNzBiNTExZWE4ZDhjNWJhMWNhYzQ='),
-        measurementId: atob('Ry1OVEcxM1NHNlZN')
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      const ROOT = 'caderno_estudos';
+    <div id="content">
+      <div id="emptyState" style="text-align:center;color:#6b7299;margin-top:100px">Carregando...</div>
+      <div id="notesArea" style="display:none">
+        <div id="notesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+      </div>
+    </div>
+  </div>
 
-      // PASSWORD HASH
-      const PASS_HASH = '6b6e3c7f57685e5fee8b9b30c3e33a4f272b07c3feab3114d96aafc5389133b9';
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-      async function hashStr(str) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-      }
+  <script>
+    const firebaseConfig = {
+      apiKey: atob('QUl6YVN5REpCZEs5SS1qdGc5dWpUYzlYc3hyLWhuUGZrSWQ0d0lV'),
+      authDomain: atob('cGR2MS03NzYzMi5maXJlYmFzZWFwcC5jb20='),
+      databaseURL: atob('aHR0cHM6Ly9wZHYxLTc3NjMyLWRlZmF1bHQtcnRkYi5maXJlYmFzZWlvLmNvbQ=='),
+      projectId: atob('cGR2MS03NzYzMg=='),
+      storageBucket: atob('cGR2MS03NzYzMi5maXJlYmFzZXN0b3JhZ2UuYXBw'),
+      messagingSenderId: atob('MjQ2MDMzNzkxMTE3'),
+      appId: atob('MToyNDYwMzM3OTExMTc6d2ViOjdiNzBiNTExZWE4ZDhjNWJhMWNhYzQ='),
+    };
 
-      // STATE
-      let data = {};
-      let activeCat = null;
-      let activeSub = null;
-      let expandedCats = new Set();
-      let currentFilter = 'all';
-      let searchQuery = '';
-      let selectedColor = '#c9a84c';
-      let isUnlocked = false;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const ROOT = 'caderno_estudos';
 
-      const COLORS = ['#c9a84c', '#4f7cff', '#4ecb8a', '#e05c6a', '#a78bfa', '#fb923c', '#22d3ee', '#f472b6'];
+    let data = {};
+    let activeCat = null;
+    let activeSub = null;
+    let currentNotesList = [];
+    let currentNoteIndex = 0;
+    let reviewNotes = [];
+    let reviewIdx = 0;
 
-      function uid() {
-        return db.ref().push().key;
-      }
-
-      function today() {
-        return new Date().toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-      }
-
-      function isToday(d) {
-        return d === today();
-      }
-
-      // SYNC
-      function setSyncStatus(s) {
-        const d = document.getElementById('syncDot');
-        if (!d) return;
-        d.className = 'sync-dot' + (s === 'online' ? '' : s === 'offline' ? ' offline' : ' syncing');
-      }
-      db.ref('.info/connected').on('value', s => setSyncStatus(s.val() ? 'online' : 'offline'));
-
-      // INIT
-      function init() {
-        document.getElementById('loadingMsg').textContent = 'Carregando dados…';
-        db.ref(ROOT).on('value', snap => {
-          data = snap.val() || {};
-          hideLoading();
-          renderSidebar();
-          if (activeCat && activeSub) {
-            if (data[activeCat]?.subcategories?.[activeSub]) renderMain();
-            else {
-              activeSub = null;
-              showEmptyState();
-            }
-          }
-        }, err => {
-          document.getElementById('loadingMsg').textContent = '❌ Erro: ' + err.message;
-        });
-      }
-
-      function hideLoading() {
-        const el = document.getElementById('loadingScreen');
-        if (!el) return;
-        el.classList.add('hidden');
-        setTimeout(() => el.remove(), 450);
-      }
-
-      // DB HELPERS
-      async function dbSet(path, val) {
-        setSyncStatus('syncing');
-        await db.ref(`${ROOT}/${path}`).set(val);
-        setSyncStatus('online');
-      }
-      async function dbUpdate(path, val) {
-        setSyncStatus('syncing');
-        await db.ref(`${ROOT}/${path}`).update(val);
-        setSyncStatus('online');
-      }
-      async function dbRemove(path) {
-        setSyncStatus('syncing');
-        await db.ref(`${ROOT}/${path}`).remove();
-        setSyncStatus('online');
-      }
-
-      // LOCK / UNLOCK
-      function handleLockBtn() {
-        if (isUnlocked) {
-          lockApp();
-        } else {
-          openPasswordModal();
-        }
-      }
-
-      function lockApp() {
-        isUnlocked = false;
-        updateLockUI();
-        showToast('Modo leitura ativado', 'success');
-      }
-
-      function updateLockUI() {
-        const btn = document.getElementById('lockBtn');
-        const icon = document.getElementById('lockIcon');
-        const label = document.getElementById('lockLabel');
-        const hint = document.getElementById('lockedHint');
-        const btnNewCat = document.getElementById('btnNewCat');
-        const btnNewNote = document.getElementById('btnNewNote');
-
-        if (isUnlocked) {
-          btn.classList.add('unlocked');
-          icon.textContent = '🔓';
-          label.textContent = 'Desbloqueado';
-          if (hint) hint.style.display = 'none';
-          if (btnNewCat) btnNewCat.style.display = 'flex';
-          if (btnNewNote) btnNewNote.style.display = 'flex';
-        } else {
-          btn.classList.remove('unlocked');
-          icon.textContent = '🔒';
-          label.textContent = 'Modo leitura';
-          if (hint && !activeSub) hint.style.display = 'inline-flex';
-          if (btnNewCat) btnNewCat.style.display = 'none';
-          if (btnNewNote) btnNewNote.style.display = 'none';
-        }
-        if (activeSub) renderMain();
+    function init() {
+      db.ref(ROOT).on('value', snap => {
+        data = snap.val() || {};
         renderSidebar();
-      }
+        document.getElementById('emptyState').innerHTML = `<p style="margin-top:100px">Selecione uma matéria e assunto na barra lateral</p>`;
+      });
+    }
 
-      function openPasswordModal() {
-        showModal(`
-    <div class="modal-header">
-      <div class="modal-title">Área Restrita</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="pw-box">
-      <div class="pw-icon">🔐</div>
-      <div class="pw-desc">Digite a senha de edição para desbloquear as funcionalidades de criação, edição e exclusão.</div>
-      <div class="form-group">
-        <input class="form-input" type="password" id="pwInput" placeholder="Senha…" style="text-align:center;letter-spacing:.2em">
-        <div class="pw-error" id="pwError">Senha incorreta. Tente novamente.</div>
-      </div>
-    </div>
-    <div class="form-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitPassword()">Desbloquear</button>
-    </div>
-  `);
-        setTimeout(() => document.getElementById('pwInput')?.focus(), 60);
-        document.getElementById('pwInput')?.addEventListener('keydown', e => {
-          if (e.key === 'Enter') submitPassword();
+    function renderSidebar() {
+      const tree = document.getElementById('sidebarTree');
+      tree.innerHTML = `<div class="section-label">MATÉRIAS</div>`;
+
+      Object.entries(data).forEach(([catId, cat]) => {
+        const subs = cat.subcategories || {};
+        const isOpen = true; // sempre abre no modo leitura para facilitar
+
+        let html = `
+          <div class="cat-row${isOpen?' open':''}" onclick="toggleCat('${catId}')">
+            <div class="cat-dot" style="background:${cat.color}"></div>
+            <span class="cat-label">${cat.name}</span>
+            <span class="cat-chevron">▶</span>
+          </div>
+          <div class="sub-group${isOpen?' open':''}" id="subs-${catId}">`;
+
+        Object.entries(subs).forEach(([subId, sub]) => {
+          const count = Object.keys(sub.notes || {}).length;
+          html += `
+            <div class="sub-row${activeCat===catId&&activeSub===subId?' active':''}" onclick="selectSub('${catId}','${subId}')">
+              <span class="sub-icon">📄</span>
+              <span class="sub-label">${sub.name}</span>
+              <span class="sub-count">${count}</span>
+            </div>`;
         });
-      }
+        html += `</div>`;
+        tree.innerHTML += html;
+      });
+    }
 
-      async function submitPassword() {
-        const val = document.getElementById('pwInput').value;
-        const h = await hashStr(val);
-        if (h === PASS_HASH) {
-          isUnlocked = true;
-          closeModal();
-          updateLockUI();
-          showToast('✓ Modo edição desbloqueado!', 'success');
-        } else {
-          const err = document.getElementById('pwError');
-          err.classList.add('show');
-          document.getElementById('pwInput').value = '';
-          document.getElementById('pwInput').focus();
-          setTimeout(() => err.classList.remove('show'), 3000);
-        }
-      }
+    function toggleCat(catId) {
+      const group = document.getElementById(`subs-${catId}`);
+      const catRow = group.previousElementSibling;
+      const isOpen = group.classList.toggle('open');
+      if (isOpen) catRow.classList.add('open');
+      else catRow.classList.remove('open');
+    }
 
-      function requireUnlock() {
-        if (!isUnlocked) {
-          openPasswordModal();
-          return false;
-        }
-        return true;
-      }
+    function selectSub(catId, subId) {
+      activeCat = catId;
+      activeSub = subId;
+      renderMain();
+    }
 
-      // SIDEBAR RENDER (mantido igual)
-      function renderSidebar() {
-        const tree = document.getElementById('sidebarTree');
-        tree.innerHTML = '<div class="section-label">Matérias</div>';
-        const cats = Object.entries(data);
-        if (!cats.length) {
-          tree.innerHTML += '<div style="padding:16px 20px;color:var(--text-faint);font-size:13px">Nenhuma matéria ainda</div>';
-          return;
-        }
-        cats.forEach(([catId, cat]) => {
-          const isOpen = expandedCats.has(catId);
-          const subs = cat.subcategories || {};
-          const subEntries = Object.entries(subs);
+    function renderMain() {
+      const cat = data[activeCat];
+      const sub = cat?.subcategories?.[activeSub];
+      if (!sub) return;
 
-          let matchedSubs = subEntries;
-          if (searchQuery) {
-            matchedSubs = subEntries.filter(([sid, sub]) => {
-              const notes = Object.values(sub.notes || {});
-              return sub.name.toLowerCase().includes(searchQuery) ||
-                notes.some(n => (n.title || '').toLowerCase().includes(searchQuery) || (n.content || '').toLowerCase().includes(searchQuery));
-            });
-            if (!cat.name.toLowerCase().includes(searchQuery) && !matchedSubs.length) return;
-          }
+      document.getElementById('mainTitle').textContent = sub.name;
+      document.getElementById('breadcrumb').innerHTML = `${cat.name} › ${sub.name}`;
 
-          const catDiv = document.createElement('div');
-          catDiv.innerHTML = `
-      <div class="cat-row${isOpen?' open':''}" id="cat-${catId}" onclick="toggleCat('${catId}')">
-        <div class="cat-dot" style="background:${cat.color}"></div>
-        <span class="cat-label">${cat.name}</span>
-        <span class="cat-chevron">▶</span>
-        ${isUnlocked?`<button class="cat-menu-btn" onclick="deleteCategoryGuard(event,'${catId}')" title="Excluir matéria">✕</button>`:''}
-      </div>
-      <div class="sub-group${isOpen?' open':''}" id="subs-${catId}">
-        ${matchedSubs.map(([sid,sub])=>{
-          const count=Object.keys(sub.notes||{}).length;
-          return ` < div class = "sub-row${activeCat===catId&&activeSub===sid?' active':''}"
-          onclick = "selectSub('${catId}','${sid}')" >
-            <
-            span class = "sub-icon" > 📄 < /span> <
-            span class = "sub-label" > $ {
-              sub.name
-            } < /span> <
-            span class = "sub-count" > $ {
-              count
-            } < /span>
-          $ {
-            isUnlocked ? `<button class="sub-del" onclick="deleteSubGuard(event,'${catId}','${sid}')" title="Excluir assunto">✕</button>` : ''
-          } <
-          /div>`;
-        }).join('')
-      }
-      $ {
-        isUnlocked ? `<div class="add-sub-row" onclick="openNewSubModal('${catId}')">
-          <span style="font-size:11px;color:var(--text-faint)">＋</span>
-          <span class="add-sub-txt">Novo Assunto</span>
-        </div>` : ''
-      } <
-      /div>
-      `;
-    tree.appendChild(catDiv);
-  });
-}
-
-function toggleCat(catId){
-  if(expandedCats.has(catId)) expandedCats.delete(catId);
-  else expandedCats.add(catId);
-  renderSidebar();
-}
-
-function selectSub(catId,subId){
-  activeCat=catId;
-  activeSub=subId;
-  expandedCats.add(catId);
-  currentFilter='all';
-  document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-  renderSidebar();
-  renderMain();
-  
-  // FECHA SIDEBAR AUTOMATICAMENTE NO MOBILE
-  if(window.innerWidth <= 820){
-    document.getElementById('sidebar').classList.remove('open');
-  }
-}
-
-function showEmptyState(){
-  document.getElementById('mainTitle').textContent='Selecione um Assunto';
-  document.getElementById('breadcrumb').textContent='← Escolha uma matéria e assunto na barra lateral';
-  document.getElementById('topActions').style.display='none';
-  document.getElementById('statsBar').style.display='none';
-  document.getElementById('emptyState').style.display='flex';
-  document.getElementById('notesArea').style.display='none';
-  const hint=document.getElementById('lockedHint');
-  if(hint) hint.style.display=isUnlocked?'none':'inline-flex';
-}
-
-// MAIN RENDER (mantido igual)
-function renderMain(){
-  if(!activeCat||!activeSub) return;
-  const cat=data[activeCat];
-  const sub=cat?.subcategories?.[activeSub];
-  if(!cat||!sub) return;
-
-  const notesObj=sub.notes||{};
-  const all=Object.entries(notesObj).map(([id,n])=>({...n,id}));
-
-  document.getElementById('mainTitle').textContent=sub.name;
-  document.getElementById('breadcrumb').innerHTML=` < span > $ {
-        cat.name
-      } < /span> › ${sub.name}`;
-      document.getElementById('topActions').style.display = 'flex';
-      document.getElementById('statsBar').style.display = 'flex';
-      document.getElementById('emptyState').style.display = 'none';
-      document.getElementById('notesArea').style.display = 'block';
-
-      document.getElementById('btnNewNote').style.display = isUnlocked ? 'flex' : 'none';
-
-      document.getElementById('statTotal').textContent = all.length;
-      document.getElementById('statImportant').textContent = all.filter(n => n.important).length;
-      document.getElementById('statToday').textContent = all.filter(n => isToday(n.date)).length;
-
-      let notes = [...all];
-      if (searchQuery) notes = notes.filter(n => (n.title || '').toLowerCase().includes(searchQuery) || (n.content || '').toLowerCase().includes(searchQuery));
-      if (currentFilter === 'important') notes = notes.filter(n => n.important);
-      else if (currentFilter === 'recent') notes = notes.sort((a, b) => (b._ts || 0) - (a._ts || 0)).slice(0, 10);
-      else notes.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+      currentNotesList = Object.entries(sub.notes || {}).map(([id,n]) => ({...n, id}));
+      currentNoteIndex = 0;
 
       const grid = document.getElementById('notesGrid');
       grid.innerHTML = '';
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('notesArea').style.display = 'block';
 
-      if (!notes.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-faint);font-size:14px">
-      ${searchQuery?'Nenhuma anotação encontrada.':isUnlocked?'Nenhuma anotação ainda. Clique em "+ Nova Anotação".':'Nenhuma anotação neste assunto.'}
-    </div>`;
+      if (!currentNotesList.length) {
+        grid.innerHTML = `<p style="text-align:center;color:#6b7299;padding:80px 20px">Nenhuma anotação neste assunto.</p>`;
         return;
       }
 
-      notes.forEach(note => {
+      currentNotesList.forEach((note, i) => {
         const card = document.createElement('div');
-        card.className = 'note-card' + (note.important ? ' important' : '');
-        card.style.setProperty('--card-color', cat.color);
-        const tags = Array.isArray(note.tags) ? note.tags : [];
-        const tagsH = tags.map(t => `<span class="tag">${t}</span>`).join('');
-        const starTag = note.important ? '<span class="tag important">⭐ Importante</span>' : '';
-
-        const editBtns = isUnlocked ? `
-      <button class="icon-btn star ${note.important?'active':''}" onclick="toggleImportant(event,'${note.id}')" title="Importante">⭐</button>
-      <button class="icon-btn" onclick="openEditNote(event,'${note.id}')" title="Editar">✏️</button>
-      <button class="icon-btn danger" onclick="deleteNote(event,'${note.id}')" title="Excluir">🗑️</button>
-    ` : `<button class="icon-btn" onclick="openReadModal('${note.id}')" title="Ler">👁️</button>`;
-
+        card.className = 'note-card';
         card.innerHTML = `
-      <div class="note-card-header">
-        <div class="note-card-title">${note.title}</div>
-        <div class="note-card-actions">${editBtns}</div>
-      </div>
-      <div class="note-preview">${(note.content||'').replace(/\n/g,' ')}</div>
-      ${(tags.length||note.important)?`<div class="note-tags">${starTag}${tagsH}</div>`:''}
-      <div class="note-meta"><span class="note-date">📅 ${note.date}</span></div>
-    `;
-        card.onclick = e => {
-          if (e.target.closest('.note-card-actions')) return;
-          openReadModal(note.id);
-        };
+          <div style="font-family:'Playfair Display',serif;font-size:16.5px;margin-bottom:8px">${note.title}</div>
+          <div style="font-size:13.5px;color:#6b7299;line-height:1.65;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">
+            ${(note.content || '').replace(/\n/g,' ')}
+          </div>
+          <div style="margin-top:14px;font-size:11px;color:#6b7299">📅 ${note.date}</div>
+        `;
+        card.onclick = () => { currentNoteIndex = i; openReadModal(); };
         grid.appendChild(card);
       });
-      }
+    }
 
-      function setFilter(f, btn) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderMain();
-      }
+    function openReadModal() {
+      const note = currentNotesList[currentNoteIndex];
+      const content = (note.content || '').replace(/\*\*(.*?)\*\*/g, '<mark style="background:#c9a84c33;color:#e8c97a;padding:2px 5px;border-radius:4px">$1</mark>');
 
-      function handleSearch() {
-        searchQuery = document.getElementById('searchInput').value.toLowerCase();
-        renderSidebar();
-        if (activeSub) renderMain();
-      }
+      document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
 
-      // CATEGORY CRUD (mantido igual)
-      function openNewCategoryModal() {
-        if (!requireUnlock()) return;
-        selectedColor = COLORS[0];
-        showModal(`
-    <div class="modal-header">
-      <div class="modal-title">Nova Matéria</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Nome da Matéria</label>
-      <input class="form-input" id="catName" placeholder="Ex: Maria da Penha, Código Penal…">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Cor</label>
-      <div class="color-picker">
-        ${COLORS.map((c,i)=>`<div class="color-swatch${i===0?' selected':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`).join('')}
-      </div>
-    </div>
-    <div class="form-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="createCategory()">Criar Matéria</button>
-    </div>
-  `);
-        setTimeout(() => document.getElementById('catName')?.focus(), 60);
-      }
-
-      function selectColor(c, el) {
-        selectedColor = c;
-        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-        el.classList.add('selected');
-      }
-
-      async function createCategory() {
-        const name = document.getElementById('catName').value.trim();
-        if (!name) {
-          showToast('Digite o nome da matéria', 'error');
-          return;
-        }
-        const id = uid();
-        try {
-          await dbSet(id, {
-            name,
-            color: selectedColor,
-            subcategories: {}
-          });
-          expandedCats.add(id);
-          closeModal();
-          showToast('Matéria criada!', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      function deleteCategoryGuard(e, id) {
-        e.stopPropagation();
-        if (!requireUnlock()) return;
-        if (!confirm(`Excluir a matéria "${data[id]?.name}" e todos os assuntos e anotações?`)) return;
-        deleteCategory(id);
-      }
-      async function deleteCategory(id) {
-        try {
-          await dbRemove(id);
-          if (activeCat === id) {
-            activeCat = null;
-            activeSub = null;
-            showEmptyState();
-          }
-          showToast('Matéria excluída', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      // SUBCATEGORY CRUD (mantido igual)
-      function openNewSubModal(catId) {
-        if (!requireUnlock()) return;
-        showModal(`
-    <div class="modal-header">
-      <div class="modal-title">Novo Assunto</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text-faint);text-transform:uppercase;margin-bottom:14px">
-      Matéria: <span style="color:var(--gold)">${data[catId]?.name||''}</span>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Nome do Assunto</label>
-      <input class="form-input" id="subName" placeholder="Ex: Medidas Protetivas, Art. 7º, Jurisprudência…">
-    </div>
-    <div class="form-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="createSub('${catId}')">Criar Assunto</button>
-    </div>
-  `);
-        setTimeout(() => document.getElementById('subName')?.focus(), 60);
-      }
-
-      async function createSub(catId) {
-        const name = document.getElementById('subName').value.trim();
-        if (!name) {
-          showToast('Digite o nome do assunto', 'error');
-          return;
-        }
-        const id = uid();
-        try {
-          await dbSet(`${catId}/subcategories/${id}`, {
-            name,
-            notes: {}
-          });
-          expandedCats.add(catId);
-          closeModal();
-          selectSub(catId, id);
-          showToast('Assunto criado!', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      function deleteSubGuard(e, catId, subId) {
-        e.stopPropagation();
-        if (!requireUnlock()) return;
-        const sub = data[catId]?.subcategories?.[subId];
-        if (!confirm(`Excluir o assunto "${sub?.name}" e todas as anotações?`)) return;
-        deleteSub(catId, subId);
-      }
-      async function deleteSub(catId, subId) {
-        try {
-          await dbRemove(`${catId}/subcategories/${subId}`);
-          if (activeCat === catId && activeSub === subId) {
-            activeSub = null;
-            showEmptyState();
-          }
-          showToast('Assunto excluído', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      // NOTE CRUD (mantido igual)
-      function openNewNoteModal(editId = null) {
-        if (!requireUnlock()) return;
-        if (!activeCat || !activeSub) return;
-        const isEdit = !!editId;
-        const note = isEdit ? (data[activeCat]?.subcategories?.[activeSub]?.notes || {})[editId] : null;
-        const tagsVal = isEdit && note ? (Array.isArray(note.tags) ? note.tags : []).join(', ') : '';
-
-        showModal(`
-    <div class="modal-header">
-      <div class="modal-title">${isEdit?'Editar Anotação':'Nova Anotação'}</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Título</label>
-      <input class="form-input" id="noteTitle" placeholder="Título da anotação…" value="${isEdit&&note?note.title.replace(/"/g,'&quot;'):''}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Conteúdo — use **texto** para destacar em dourado</label>
-      <textarea class="form-textarea" id="noteContent" placeholder="Escreva pontos importantes, artigos, jurisprudência…">${isEdit&&note?note.content:''}</textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tags (vírgula p/ separar)</label>
-      <input class="form-input" id="noteTags" placeholder="Ex: Art. 7, Medidas, Jurisprudência" value="${tagsVal}">
-    </div>
-    <div class="form-group" style="display:flex;align-items:center;gap:10px">
-      <input type="checkbox" id="noteImportant" ${isEdit&&note?.important?'checked':''} style="accent-color:var(--gold);width:16px;height:16px">
-      <label for="noteImportant" style="font-size:13px;color:var(--text-muted);cursor:pointer">⭐ Ponto importante</label>
-    </div>
-    <div class="form-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="${isEdit?`saveEditNote('${editId}')`:' saveNote()'}">${isEdit?'Salvar':'Adicionar'}</button>
-    </div>
-  `, 'wide');
-        setTimeout(() => document.getElementById('noteTitle')?.focus(), 60);
-      }
-
-      async function saveNote() {
-        if (!requireUnlock()) return;
-        const title = document.getElementById('noteTitle').value.trim();
-        const content = document.getElementById('noteContent').value.trim();
-        const tags = document.getElementById('noteTags').value.split(',').map(t => t.trim()).filter(Boolean);
-        const important = document.getElementById('noteImportant').checked;
-        if (!title) {
-          showToast('Digite o título', 'error');
-          return;
-        }
-        if (!content) {
-          showToast('Adicione o conteúdo', 'error');
-          return;
-        }
-        const id = uid();
-        try {
-          await dbSet(`${activeCat}/subcategories/${activeSub}/notes/${id}`, {
-            title,
-            content,
-            tags,
-            important,
-            date: today(),
-            _ts: Date.now()
-          });
-          closeModal();
-          showToast('Anotação adicionada! ✓', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      async function saveEditNote(id) {
-        if (!requireUnlock()) return;
-        const title = document.getElementById('noteTitle').value.trim();
-        const content = document.getElementById('noteContent').value.trim();
-        const tags = document.getElementById('noteTags').value.split(',').map(t => t.trim()).filter(Boolean);
-        const important = document.getElementById('noteImportant').checked;
-        if (!title) {
-          showToast('Digite o título', 'error');
-          return;
-        }
-        const existing = (data[activeCat]?.subcategories?.[activeSub]?.notes || {})[id] || {};
-        try {
-          await dbUpdate(`${activeCat}/subcategories/${activeSub}/notes/${id}`, {
-            title,
-            content,
-            tags,
-            important,
-            date: existing.date || today(),
-            _ts: existing._ts || Date.now()
-          });
-          closeModal();
-          showToast('Anotação atualizada! ✓', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      function openEditNote(e, id) {
-        e.stopPropagation();
-        if (!requireUnlock()) return;
-        openNewNoteModal(id);
-      }
-
-      async function deleteNote(e, id) {
-        e.stopPropagation();
-        if (!requireUnlock()) return;
-        if (!confirm('Excluir esta anotação?')) return;
-        try {
-          await dbRemove(`${activeCat}/subcategories/${activeSub}/notes/${id}`);
-          showToast('Anotação excluída', 'success');
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      async function toggleImportant(e, id) {
-        e.stopPropagation();
-        if (!requireUnlock()) return;
-        const note = (data[activeCat]?.subcategories?.[activeSub]?.notes || {})[id];
-        if (!note) return;
-        try {
-          await dbUpdate(`${activeCat}/subcategories/${activeSub}/notes/${id}`, {
-            important: !note.important
-          });
-        } catch (e) {
-          showToast('Erro: ' + e.message, 'error');
-        }
-      }
-
-      // READ MODAL (mantido igual)
-      function openReadModal(id) {
-        const note = (data[activeCat]?.subcategories?.[activeSub]?.notes || {})[id];
-        if (!note) return;
-        const body = (note.content || '')
-          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          .replace(/\*\*(.*?)\*\*/g, '<mark>$1</mark>');
-        const tags = Array.isArray(note.tags) ? note.tags : [];
-        const tagsH = tags.map(t => `<span class="tag">${t}</span>`).join('');
-
-        showModal(`
-    <div class="modal-header">
-      <div style="display:flex;gap:8px;align-items:center">
-        ${note.important?'<span style="font-size:15px">⭐</span>':''}
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">
-          ${data[activeCat]?.name||''} › ${data[activeCat]?.subcategories?.[activeSub]?.name||''}
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h2 style="font-family:'Playfair Display',serif;color:#e8c97a;font-size:23px">${note.title}</h2>
+            <button onclick="closeModal()" style="background:none;border:none;font-size:32px;color:#6b7299">✕</button>
+          </div>
+          <div style="color:#6b7299;font-size:12.5px;margin-bottom:18px">📅 ${note.date}</div>
+          <div style="font-size:15.8px;line-height:1.85;white-space:pre-wrap">${content}</div>
+          <div style="margin-top:32px;display:flex;gap:10px">
+            <button onclick="prevNote()" style="flex:1;padding:14px;background:#22273a;border:none;border-radius:10px;color:#dde0f0">← Anterior</button>
+            <button onclick="nextNote()" style="flex:1;padding:14px;background:#c9a84c;color:#111422;border:none;border-radius:10px;font-weight:700">Próxima →</button>
+          </div>
+          <button onclick="closeModal()" style="margin-top:12px;width:100%;padding:14px;background:transparent;border:1px solid #6b7299;color:#6b7299;border-radius:10px">Fechar</button>
         </div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="read-title">${note.title}</div>
-    <div class="read-meta">
-      <span class="note-date">📅 ${note.date}</span>
-      ${tagsH?`<div class="note-tags">${tagsH}</div>`:''}
-    </div>
-    <div class="read-body">${body}</div>
-    <div class="read-actions">
-      ${isUnlocked?`<button class="btn btn-ghost" onclick="closeModal();openEditNote({stopPropagation:()=>{}},'${id}')">✏️ Editar</button>`:''}
-      <button class="btn btn-primary" onclick="closeModal()">✓ Fechar</button>
-    </div>
-    <div style="margin-top:14px;padding:10px 14px;background:rgba(201,168,76,.04);border-radius:8px;font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace">
-      💡 Use **texto** entre asteriscos duplos para destacar pontos em dourado
-    </div>
-  `, 'wide');
-      }
+      `;
+      document.body.appendChild(overlay);
+    }
 
-      // REVIEW MODE (mantido igual)
-      let reviewNotes = [],
-        reviewIdx = 0;
+    function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.remove()); }
+    function nextNote() { if (currentNoteIndex < currentNotesList.length-1) { currentNoteIndex++; openReadModal(); } }
+    function prevNote() { if (currentNoteIndex > 0) { currentNoteIndex--; openReadModal(); } }
 
-      function openReviewMode() {
-        if (!activeCat || !activeSub) return;
-        const all = Object.entries(data[activeCat]?.subcategories?.[activeSub]?.notes || {}).map(([id, n]) => ({
-          ...n,
-          id
-        }));
-        const imp = all.filter(n => n.important);
-        reviewNotes = (imp.length ? imp : all).sort(() => Math.random() - .5);
-        reviewIdx = 0;
-        if (!reviewNotes.length) {
-          showToast('Sem anotações para revisar', 'error');
-          return;
-        }
-        showReviewCard();
-      }
+    // REVISÃO (mantida igual)
+    function openReviewMode() {
+      if (!activeCat || !activeSub) return alert("Selecione primeiro um assunto.");
+      const all = Object.entries(data[activeCat]?.subcategories?.[activeSub]?.notes || {}).map(([id,n]) => ({...n,id}));
+      const imp = all.filter(n => n.important);
+      reviewNotes = (imp.length ? imp : all).sort(() => Math.random() - 0.5);
+      reviewIdx = 0;
+      if (!reviewNotes.length) return alert("Nenhuma anotação para revisar.");
+      showReviewCard();
+    }
 
-      function showReviewCard() {
-        const note = reviewNotes[reviewIdx];
-        const pct = Math.round(((reviewIdx + 1) / reviewNotes.length) * 100);
-        const body = (note.content || '')
-          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          .replace(/\*\*(.*?)\*\*/g, '<mark>$1</mark>');
+    function showReviewCard() {
+      const note = reviewNotes[reviewIdx];
+      const pct = Math.round(((reviewIdx + 1) / reviewNotes.length) * 100);
+      const body = (note.content || '').replace(/\*\*(.*?)\*\*/g, '<mark style="background:#c9a84c33;color:#e8c97a">$1</mark>');
 
-        showModal(`
-    <div class="modal-header">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:.1em">
-        📖 REVISÃO · ${reviewIdx+1}/${reviewNotes.length}
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="review-progress"><div class="review-progress-bar" style="width:${pct}%"></div></div>
-    <div class="read-title">${note.title}</div>
-    <div class="divider"></div>
-    <div class="read-body">${body}</div>
-    <div class="read-actions">
-      <button class="btn btn-ghost" onclick="prevReview()" ${reviewIdx===0?'disabled':''}>← Anterior</button>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);line-height:2.5">${pct}% completo</span>
-      ${reviewIdx<reviewNotes.length-1
-        ?`<button class="btn btn-primary" onclick="nextReview()">Próxima →</button>`
-        :`<button class="btn btn-primary" onclick="closeModal();showToast('Revisão concluída! 🎉','success')">✓ Concluir</button>`}
-    </div>
-  `, 'wide');
-      }
+      closeModal();
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6b7299">📖 REVISÃO • ${reviewIdx+1}/${reviewNotes.length}</div>
+            <button onclick="closeModal()" style="background:none;border:none;font-size:32px;color:#6b7299">✕</button>
+          </div>
+          <div style="height:6px;background:#1e2338;border-radius:9999px;margin-bottom:24px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#c9a84c,#e8c97a)"></div></div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:#e8c97a;line-height:1.3;margin-bottom:20px">${note.title}</div>
+          <div style="font-size:15.8px;line-height:1.85;white-space:pre-wrap">${body}</div>
+          <div style="margin-top:32px;display:flex;justify-content:space-between;gap:12px">
+            <button onclick="prevReview()" style="flex:1;padding:14px;background:#22273a;border:none;border-radius:10px;color:#dde0f0" ${reviewIdx===0?'disabled':''}>← Anterior</button>
+            <div style="color:#6b7299;font-size:13px">${pct}% concluído</div>
+            ${reviewIdx < reviewNotes.length-1 ? `<button onclick="nextReview()" style="flex:1;padding:14px;background:#c9a84c;color:#111422;border:none;border-radius:10px;font-weight:700">Próxima →</button>` : `<button onclick="finishReview()" style="flex:1;padding:14px;background:#c9a84c;color:#111422;border:none;border-radius:10px;font-weight:700">✓ Concluir Revisão</button>`}
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
 
-      function nextReview() {
-        reviewIdx++;
-        showReviewCard();
-      }
+    function nextReview(){ reviewIdx++; showReviewCard(); }
+    function prevReview(){ if(reviewIdx>0) reviewIdx--; showReviewCard(); }
+    function finishReview(){ closeModal(); alert('🎉 Revisão concluída!'); }
 
-      function prevReview() {
-        reviewIdx--;
-        showReviewCard();
-      }
+    function toggleMobileSidebar() {
+      const sb = document.getElementById('sidebar');
+      sb.style.transform = sb.style.transform === 'translateX(0px)' ? 'translateX(-100%)' : 'translateX(0px)';
+    }
 
-      // MODAL SYSTEM (mantido igual)
-      function showModal(content, cls = '') {
-        closeModal();
-        const ov = document.createElement('div');
-        ov.className = 'modal-overlay';
-        ov.id = 'modalOverlay';
-        ov.innerHTML = `<div class="modal ${cls}">${content}</div>`;
-        ov.onclick = e => {
-          if (e.target === ov) closeModal();
-        };
-        document.body.appendChild(ov);
-        document.addEventListener('keydown', handleModalKey);
-      }
-
-      function handleModalKey(e) {
-        if (e.key === 'Escape') closeModal();
-      }
-
-      function closeModal() {
-        document.getElementById('modalOverlay')?.remove();
-        document.removeEventListener('keydown', handleModalKey);
-      }
-
-      // TOAST (mantido igual)
-      let toastTimer;
-
-      function showToast(msg, type = 'success') {
-        const t = document.getElementById('toast');
-        t.className = `show ${type}`;
-        document.getElementById('toastMsg').textContent = msg;
-        t.querySelector('.toast-icon').textContent = type === 'success' ? '✓' : '!';
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          t.className = '';
-        }, 2800);
-      }
-
-      // MOBILE SIDEBAR TOGGLE
-      function toggleMobileSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('open');
-      }
-
-      // START
-      updateLockUI();
-      init();
-    </script>
-
-  </body>
-
+    init();
+  </script>
+</body>
 </html>
